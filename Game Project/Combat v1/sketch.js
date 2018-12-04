@@ -12,8 +12,10 @@ function setup() {
 
 function draw() {
   background(187, 207, 82);
+  drawCourse()
 
   for (let i = 0; i < bullet.length; i++) {
+      bullet[i].detectCollision();
       bullet[i].drawBullet();
       bullet[i].moveBullet();
     }
@@ -39,22 +41,33 @@ function draw() {
 }
 
 function keyPressed(){ //every time you push a key, make a new ball from the ball class and add it to the balls array
-  if (keyCode === 191) {
-    let  b = new Bullet(t1.pos.x,t1.pos.y,0,0,0,p5.Vector.fromAngle(t1.heading),8);
+  var HeadAdd = p5.Vector.fromAngle(t1.heading)
+
+  var drawOk = 1
+  for (let i = 0; i < bullet.length; i++) {
+    if (bullet[i].a == 255) {
+      drawOk = 0
+    }
+  }
+  if ((keyCode === 191) && drawOk) {
+    let  b = new Bullet(t1.pos.x+HeadAdd.x*35, t1.pos.y+HeadAdd.y*35, 0, 0, 0, 255, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
     bullet.push(b);
     //console.log(bullet);
   }
-}
+}//this.bHeading  = this.bHeading.mult(1.05)
 
 class Bullet {
-  constructor(bPosx, bPosy, r,g,b,bHeading,w){ //every ball needs an x value and a y value
+  constructor(bPosx, bPosy, r, g, b, a, bHeading, w){ //every ball needs an x value and a y value
         this.bPosx = bPosx;
         this.bPosy = bPosy;
         this.r = r;
         this.g = g;
         this.b = b;
+        this.a = a;
         this.bHeading = bHeading
         this.w = w
+
+        this.testPos
 
   }
 
@@ -62,16 +75,26 @@ class Bullet {
         push();
         translate(this.bPosx,this.bPosy);
         strokeWeight(1);
-        stroke(0,0,0)
-        fill(this.r,this.g,this.b);
+        stroke(this.r,this.g,this.b,this.a)
+        fill(this.r,this.g,this.b,this.a);
         ellipse(0 , 0,this.w,this.w);
         pop();
+
   }
 
   moveBullet(){ //update the location of the ball, so it moves across the screen
-    this.bHeading  = this.bHeading.mult(1.05)
-    this.bPosx = this.bPosx+this.bHeading.x;
-    this.bPosy = this.bPosy+this.bHeading.y;
+    if (this.testPos[0] != 254) {
+      this.bPosx = this.bPosx+this.bHeading.x;
+      this.bPosy = this.bPosy+this.bHeading.y;
+    } else {
+      this.a = 0
+    }
+
+  }
+
+  detectCollision(){
+    this.testPos = get(this.bPosx, this.bPosy);
+    console.log(this.testPos);
   }
 
 }
