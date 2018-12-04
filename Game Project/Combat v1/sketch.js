@@ -42,6 +42,7 @@ function draw() {
   textSize(32);
   text(score1, canW/4, 40);
   text(score2, (canW/4)*3, 40);
+
 }
 
 function keyPressed(){ //every time you push a key, make a new ball from the ball class and add it to the balls array
@@ -135,9 +136,12 @@ class Tank {
     push();
     translate(this.pos.x,this.pos.y);
     rotate(this.heading - this.startAngle);
-    rect(-20,-15,40,30);
 
-    rect(-6,15,12,20);
+    rectMode(CORNER);
+    rect(-18,-15,10.5,30);
+    rect(9,-15,10.5,30);
+    rect(-9,-6,18,15);
+    rect(-3,9,7.5,21);
 
     pop();
   }
@@ -147,10 +151,10 @@ class Tank {
   }
 
   detectWall(){
-    this.testTopRight = get(this.pos.x+20, this.pos.y-20);
-    this.testTopLeft = get(this.pos.x-20, this.pos.y-20);
-    this.testBotRight = get(this.pos.x+20, this.pos.y+20);
-    this.testBotLeft = get(this.pos.x-20, this.pos.y+20);
+    this.testTopRight = get(this.pos.x+19, this.pos.y-15);
+    this.testTopLeft = get(this.pos.x-18, this.pos.y-15);
+    this.testBotRight = get(this.pos.x+19, this.pos.y+15);
+    this.testBotLeft = get(this.pos.x-18, this.pos.y+20);
   }
 
   moveMe1(){
