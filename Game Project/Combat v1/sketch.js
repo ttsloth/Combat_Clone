@@ -1,29 +1,25 @@
 let t;
 let bullet = [];
-var canH = 586
-var canW = 900
+var canH = 586;
+var canW = 900;
+var score1 = 0
+var score2 = 0
 function setup() {
 
   createCanvas(canW,canH);
 
-  t1 = new Tank(255,0,0,createVector(65, 295), 0, 0.05, createVector(0,0), 0);
-  t2 = new Tank(0,0,255,createVector(835, 295), 0, 0.05, createVector(0,0), 0);
+  t1 = new Tank(253,0,0,createVector(65, 295), 0, 0.05, createVector(0,0), 0, PI/2);
+  t2 = new Tank(0,0,255,createVector(835, 295), 0, 0.05, createVector(0,0), 0, PI/2);
 }
 
 function draw() {
   background(187, 207, 82);
-  drawCourse()
-
-  for (let i = 0; i < bullet.length; i++) {
-      bullet[i].detectCollision();
-      bullet[i].drawBullet();
-      bullet[i].moveBullet();
-    }
+  drawCourse();
 
   t1.drawTank();
   t2.drawTank();
-  noStroke()
-  drawCourse()
+  noStroke();
+  drawCourse();
   t1.detectWall();
   t2.detectWall();
   t1.moveMe2();
@@ -33,28 +29,43 @@ function draw() {
   t1.updatePos();
   t2.updatePos();
 
+  for (let i = 0; i < bullet.length; i++) {
+      bullet[i].detectCollision();
+      bullet[i].drawBullet();
+      bullet[i].moveBullet();
+    }
+
+
+
   noStroke();
   fill(0,0,0);
   textSize(32);
-  text('0', canW/4, 40);
-  text('0', (canW/4)*3, 40);
+  text(score1, canW/4, 40);
+  text(score2, (canW/4)*3, 40);
 }
 
 function keyPressed(){ //every time you push a key, make a new ball from the ball class and add it to the balls array
-  var HeadAdd = p5.Vector.fromAngle(t1.heading)
+  var HeadAdd1 = p5.Vector.fromAngle(t1.heading);
+  var HeadAdd2 = p5.Vector.fromAngle(t2.heading);
 
-  var drawOk = 1
+  var drawOk = 1;
   for (let i = 0; i < bullet.length; i++) {
     if (bullet[i].a == 255) {
-      drawOk = 0
+      drawOk = 0;
     }
   }
+
   if ((keyCode === 191) && drawOk) {
-    let  b = new Bullet(t1.pos.x+HeadAdd.x*35, t1.pos.y+HeadAdd.y*35, 0, 0, 0, 255, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
+    let  b = new Bullet(t2.pos.x+HeadAdd2.x*37, t2.pos.y+HeadAdd2.y*37, 0, 0, 0, 255, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
     bullet.push(b);
-    //console.log(bullet);
   }
-}//this.bHeading  = this.bHeading.mult(1.05)
+
+  if ((keyCode === 32)) {
+    let  b = new Bullet(t1.pos.x+HeadAdd1.x*40, t1.pos.y+HeadAdd1.y*40, 0, 0, 0, 255, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
+    bullet.push(b);
+  }
+
+}
 
 class Bullet {
   constructor(bPosx, bPosy, r, g, b, a, bHeading, w){ //every ball needs an x value and a y value
@@ -64,10 +75,10 @@ class Bullet {
         this.g = g;
         this.b = b;
         this.a = a;
-        this.bHeading = bHeading
-        this.w = w
+        this.bHeading = bHeading;
+        this.w = w;
 
-        this.testPos
+        this.testPos;
 
   }
 
@@ -75,7 +86,7 @@ class Bullet {
         push();
         translate(this.bPosx,this.bPosy);
         strokeWeight(1);
-        stroke(this.r,this.g,this.b,this.a)
+        stroke(this.r,this.g,this.b,this.a);
         fill(this.r,this.g,this.b,this.a);
         ellipse(0 , 0,this.w,this.w);
         pop();
@@ -83,24 +94,22 @@ class Bullet {
   }
 
   moveBullet(){ //update the location of the ball, so it moves across the screen
-    if (this.testPos[0] != 254) {
+    if ((this.testPos[0] != 254) && (this.testPos[0] != 253) && (this.testPos[2] != 255)) {
       this.bPosx = this.bPosx+this.bHeading.x;
       this.bPosy = this.bPosy+this.bHeading.y;
     } else {
-      this.a = 0
+      this.a = 0;
     }
-
   }
 
   detectCollision(){
     this.testPos = get(this.bPosx, this.bPosy);
-    console.log(this.testPos);
   }
 
 }
 
 class Tank {
-  constructor(r, g, b, pos, heading, angle, vel, force) {
+  constructor(r, g, b, pos, heading, angle, vel, force, startAngle) {
     this.r = r;
     this.g = g;
     this.b = b;
@@ -109,6 +118,7 @@ class Tank {
     this.angle = angle;
     this.vel = vel;
     this.force = force;
+    this.startAngle = startAngle;
 
     this.testTopRight;
     this.testBotRight;
@@ -124,7 +134,7 @@ class Tank {
     fill(this.r,this.g,this.b);
     push();
     translate(this.pos.x,this.pos.y);
-    rotate(this.heading - PI/2)
+    rotate(this.heading - this.startAngle);
     rect(-20,-15,40,30);
 
     rect(-6,15,12,20);
@@ -141,7 +151,6 @@ class Tank {
     this.testTopLeft = get(this.pos.x-20, this.pos.y-20);
     this.testBotRight = get(this.pos.x+20, this.pos.y+20);
     this.testBotLeft = get(this.pos.x-20, this.pos.y+20);
-    //console.log(this.testTopRight);
   }
 
   moveMe1(){
@@ -159,15 +168,14 @@ class Tank {
 
     } else {
       this.vel = createVector(0,0);
-      //console.log("stopped");
     }
 
     if (keyIsDown(LEFT_ARROW)) { // if you hold the down arrow, move down by speed
-        this.heading -= this.angle
+        this.heading -= this.angle;
     }
 
     if (keyIsDown(RIGHT_ARROW)) { // if you hold the down arrow, move down by speed
-        this.heading += this.angle
+        this.heading += this.angle;
     }
 
   }
@@ -187,15 +195,14 @@ class Tank {
 
     } else {
       this.vel = createVector(0,0);
-      //console.log("stopped");
     }
 
     if (keyIsDown(65)) { // if you hold the down arrow, move down by speed
-        this.heading -= this.angle
+        this.heading -= this.angle;
     }
 
     if (keyIsDown(68)) { // if you hold the down arrow, move down by speed
-        this.heading += this.angle
+        this.heading += this.angle;
     }
 
   }
@@ -205,31 +212,31 @@ class Tank {
 function drawCourse() {
   fill(254, 176, 91);
 
-  rect(0,55,canW,20)
-  rect(0,canH-20,canW,20)
-  rect(0,55,20,canH-55)
-  rect(canW-20,55,20,canH-55)
+  rect(0,55,canW,20);
+  rect(0,canH-20,canW,20);
+  rect(0,55,20,canH-55);
+  rect(canW-20,55,20,canH-55);
 
-  rect((canW/2)-20,55, 40, 60)
-  rect((canW/2)-20,canH-60, 40, 60)
+  rect((canW/2)-20,55, 40, 60);
+  rect((canW/2)-20,canH-60, 40, 60);
 
-  rect((canW/4)-20,(canH/2)-20,40,40)
-  rect((canW/4*3)-20,(canH/2)-20,40,40)
+  rect((canW/4)-20,(canH/2)-20,40,40);
+  rect((canW/4*3)-20,(canH/2)-20,40,40);
 
-  rect((canW/2)-150,canH/4,60,20)
-  rect((canW/2)-150,canH/4,20,60)
-  rect((canW/2)+90,canH/4,60,20)
-  rect((canW/2)+130,canH/4,20,60)
+  rect((canW/2)-150,canH/4,60,20);
+  rect((canW/2)-150,canH/4,20,60);
+  rect((canW/2)+90,canH/4,60,20);
+  rect((canW/2)+130,canH/4,20,60);
 
-  rect((canW/2)-150,(canH/4*3)+20,60,20)
-  rect((canW/2)-150,(canH/4*3)+20,20,-40)
-  rect((canW/2)+90,(canH/4*3)+20,60,20)
-  rect((canW/2)+130,(canH/4*3)+20,20,-40)
+  rect((canW/2)-150,(canH/4*3)+20,60,20);
+  rect((canW/2)-150,(canH/4*3)+20,20,-40);
+  rect((canW/2)+90,(canH/4*3)+20,60,20);
+  rect((canW/2)+130,(canH/4*3)+20,20,-40);
 
-  rect(canW/8, (canH-20)/3, 20,210)
-  rect(canW/8, (canH-20)/3, -20,20)
-  rect(canW/8, (canH-20)/3*2+1, -20,20)
-  rect((canW/8)*7-20, (canH-20)/3, 20,210)
-  rect((canW/8)*7-20, (canH-20)/3, 40,20)
-  rect((canW/8)*7-20, (canH-20)/3*2+1, 40,20)
+  rect(canW/8, (canH-20)/3, 20,210);
+  rect(canW/8, (canH-20)/3, -20,20);
+  rect(canW/8, (canH-20)/3*2+1, -20,20);
+  rect((canW/8)*7-20, (canH-20)/3, 20,210);
+  rect((canW/8)*7-20, (canH-20)/3, 40,20);
+  rect((canW/8)*7-20, (canH-20)/3*2+1, 40,20);
 }
