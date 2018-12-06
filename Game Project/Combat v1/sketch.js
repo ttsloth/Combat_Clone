@@ -1,20 +1,22 @@
-let t;
+  let t;
 let bullet = [];
 var canH = 586;
 var canW = 900;
-var score1 = 0
-var score2 = 0
 function setup() {
 
   createCanvas(canW,canH);
 
-  t1 = new Tank(253,0,0,createVector(65, 295), 0, 0.05, createVector(0,0), 0, PI/2);
-  t2 = new Tank(0,0,255,createVector(835, 295), 0, 0.05, createVector(0,0), 0, PI/2);
+  t1 = new Tank(250,0,0,createVector(65, 295), 0, 0.05, createVector(0,0), 0, PI/2);
+  t2 = new Tank(0,0,255,createVector(835, 295), PI, 0.05, createVector(0,0), 0, PI/2);
+  b1 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
+  b = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
 }
 
 function draw() {
   background(187, 207, 82);
   drawCourse();
+
+
 
   t1.drawTank();
   t2.drawTank();
@@ -29,41 +31,59 @@ function draw() {
   t1.updatePos();
   t2.updatePos();
 
-  for (let i = 0; i < bullet.length; i++) {
-      bullet[i].detectCollision();
-      bullet[i].drawBullet();
-      bullet[i].moveBullet();
-    }
+  b1.detectCollision();
+  b1.drawBullet();
+  b1.moveBullet();
+
+  b.detectCollision();
+  b.drawBullet();
+  b.moveBullet();
+
+
+
+  // for (let i = 0; i < bullet.length; i++) {
+  //     bullet[i].detectCollision();
+  //     bullet[i].drawBullet();
+  //     bullet[i].moveBullet();
+  //   }
 
 
 
   noStroke();
   fill(0,0,0);
   textSize(32);
-  text(score1, canW/4, 40);
-  text(score2, (canW/4)*3, 40);
+  text(b1.score, canW/4, 40);
+  text(b.score, (canW/4)*3, 40);
 
 }
 
 function keyPressed(){ //every time you push a key, make a new ball from the ball class and add it to the balls array
-  var HeadAdd1 = p5.Vector.fromAngle(t1.heading);
-  var HeadAdd2 = p5.Vector.fromAngle(t2.heading);
 
-  var drawOk = 1;
-  for (let i = 0; i < bullet.length; i++) {
-    if (bullet[i].a == 255) {
-      drawOk = 0;
-    }
+
+  var drawOk2 = 1;
+  if (b.a == 255) {
+    drawOk2 = 0;
   }
 
-  if ((keyCode === 191) && drawOk) {
-    let  b = new Bullet(t2.pos.x+HeadAdd2.x*37, t2.pos.y+HeadAdd2.y*37, 0, 0, 0, 255, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
-    bullet.push(b);
+  if ((keyCode === 191) && drawOk2) {
+    var HeadAdd2 = p5.Vector.fromAngle(t2.heading);
+    b.a = 255
+    b.bPosx = t2.pos.x+HeadAdd2.x*37
+    b.bPosy = t2.pos.y+HeadAdd2.y*37
+    b.bHeading = (p5.Vector.fromAngle(t2.heading)).mult(8)
   }
 
-  if ((keyCode === 32)) {
-    let  b = new Bullet(t1.pos.x+HeadAdd1.x*40, t1.pos.y+HeadAdd1.y*40, 0, 0, 0, 255, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
-    bullet.push(b);
+  var drawOk1 = 1;
+  if (b1.a == 255) {
+    drawOk1 = 0;
+  }
+
+  if ((keyCode === 32) && drawOk1) {
+    var HeadAdd1 = p5.Vector.fromAngle(t1.heading);
+    b1.a = 255
+    b1.bPosx = t1.pos.x+HeadAdd1.x*37
+    b1.bPosy = t1.pos.y+HeadAdd1.y*37
+    b1.bHeading = (p5.Vector.fromAngle(t1.heading)).mult(8)
   }
 
 }
@@ -78,6 +98,7 @@ class Bullet {
         this.a = a;
         this.bHeading = bHeading;
         this.w = w;
+        this.score = 0;
 
         this.testPos;
 
@@ -95,11 +116,29 @@ class Bullet {
   }
 
   moveBullet(){ //update the location of the ball, so it moves across the screen
-    if ((this.testPos[0] != 254) && (this.testPos[0] != 253) && (this.testPos[2] != 255)) {
+    if (this.testPos[0] == 254) {
+
+      this.a = 0;
+
+    } else if (this.testPos[0] == 250) {
+
+      if (this.a != 0) {
+        this.score += 1
+        t1.pos = createVector(65, 295)
+      }
+      this.a = 0;
+
+    } else if (this.testPos[2] == 255) {
+
+      if (this.a != 0) {
+        this.score += 1
+        t2.pos = createVector(835, 295)
+      }
+      this.a = 0
+
+    } else {
       this.bPosx = this.bPosx+this.bHeading.x;
       this.bPosy = this.bPosy+this.bHeading.y;
-    } else {
-      this.a = 0;
     }
   }
 
@@ -143,6 +182,7 @@ class Tank {
     rect(-9,-6,18,15);
     rect(-3,9,7.5,21);
 
+
     pop();
   }
 
@@ -157,6 +197,8 @@ class Tank {
     this.testBotLeft = get(this.pos.x-18, this.pos.y+20);
   }
 
+
+
   moveMe1(){
 
     if (keyIsDown(UP_ARROW) && (this.testTopRight[0] != 254) && (this.testBotRight[0] != 254) && (this.testTopLeft[0] != 254) && (this.testBotLeft[0] != 254))  { //if you hold the up arrow, move up by speed
@@ -165,13 +207,17 @@ class Tank {
       force.mult(1.5);
       this.vel = force;
 
+
     } else if (keyIsDown(UP_ARROW)) {
       var direction = p5.Vector.fromAngle(this.heading + PI);
       this.pos.x += direction.x*20;
       this.pos.y += direction.y*20;
+      console.log("detected")
+
 
     } else {
       this.vel = createVector(0,0);
+
     }
 
     if (keyIsDown(LEFT_ARROW)) { // if you hold the down arrow, move down by speed
@@ -186,16 +232,22 @@ class Tank {
 
   moveMe2(){
 
-    if (keyIsDown(87) && (this.testTopRight[0] != 254) && (this.testBotRight[0] != 254) && (this.testTopLeft[0] != 254) && (this.testBotLeft[0] != 254))  { //if you hold the up arrow, move up by speed
+    if ((keyIsDown(87)) && (this.testTopRight[0] != 254) && (this.testBotRight[0] != 254) && (this.testTopLeft[0] != 254) && (this.testBotLeft[0] != 254))  { //if you hold the up arrow, move up by speed
 
       var force = p5.Vector.fromAngle(this.heading);
       force.mult(1.5);
       this.vel = force;
 
+
     } else if (keyIsDown(87)) {
       var direction = p5.Vector.fromAngle(this.heading + PI);
       this.pos.x += direction.x*20;
       this.pos.y += direction.y*20;
+      console.log(this.testTopRight)
+      console.log(this.testTopLeft)
+      console.log(this.testBotRight)
+      console.log(this.testBotLeft)
+      console.log("detected")
 
     } else {
       this.vel = createVector(0,0);
