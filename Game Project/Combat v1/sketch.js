@@ -1,110 +1,97 @@
-  let t;
-let bullet = [];
+// Variables for canvas width and height, global
 var canH = 586;
 var canW = 900;
-function setup() {
 
+var scoreColor
+
+function preload() {
+  soundFormats('mp3', 'ogg');
+  pewSound = loadSound('pew.mp3');
+  explodeSound = loadSound('explosion.mp3');
+}
+
+function setup() {
+  // Creates a canvas with the canH and canW variables
   createCanvas(canW,canH);
 
+  // Creates Red Tank
   t1 = new Tank(250,0,0,createVector(65, 295), 0, 0.05, createVector(0,0), 0, PI/2);
+  // Creates Blue Tank
   t2 = new Tank(0,0,255,createVector(835, 295), PI, 0.05, createVector(0,0), 0, PI/2);
+
+  // Creates Red Tank Bullets
   b1 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
-  b = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
+  // Creates Blue Tank Bullets
+  b2 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
+
 }
 
 function draw() {
-  background(187, 207, 82);
-  drawCourse();
 
 
+  // Draw the first background and course
+  drawBackground2();
+  drawCourse2();
 
+  // Call all the tank functions for both tanks
   t1.drawTank();
   t2.drawTank();
   noStroke();
-  drawCourse();
+  drawCourse2();
   t1.detectWall();
   t2.detectWall();
-  t1.moveMe2();
-  t2.moveMe1();
-
-
+  t1.moveMe(65, 68, 87);
+  t2.moveMe(LEFT_ARROW, RIGHT_ARROW, UP_ARROW);
   t1.updatePos();
   t2.updatePos();
 
+  // Call all the bullet functions for all bullets
   b1.detectCollision();
   b1.drawBullet();
   b1.moveBullet();
+  b2.detectCollision();
+  b2.drawBullet();
+  b2.moveBullet();
 
-  b.detectCollision();
-  b.drawBullet();
-  b.moveBullet();
-
-
-
-  // for (let i = 0; i < bullet.length; i++) {
-  //     bullet[i].detectCollision();
-  //     bullet[i].drawBullet();
-  //     bullet[i].moveBullet();
-  //   }
-
-
-
-  noStroke();
-  fill(0,0,0);
-  textSize(32);
-  text(b1.score, canW/4, 40);
-  text(b.score, (canW/4)*3, 40);
-
+  // Call the score function
+  showScore();
+  // //text showing mouse coordinates
+  // textSize(10)
+  // fill(255, 0, 0);
+  // text("("+mouseX + ", " + mouseY+")", 5, 15);
+  //
+  // fill(255,255,0);
+  // strokeWeight(10)
+  // stroke(255,255,0);
 }
 
-function keyPressed(){ //every time you push a key, make a new ball from the ball class and add it to the balls array
+function keyPressed(){
+  // Shoots a bullet from the blue tank
+  addBullet(18,t2,b2);
 
-
-  var drawOk2 = 1;
-  if (b.a == 255) {
-    drawOk2 = 0;
-  }
-
-  if ((keyCode === 191) && drawOk2) {
-    var HeadAdd2 = p5.Vector.fromAngle(t2.heading);
-    b.a = 255
-    b.bPosx = t2.pos.x+HeadAdd2.x*37
-    b.bPosy = t2.pos.y+HeadAdd2.y*37
-    b.bHeading = (p5.Vector.fromAngle(t2.heading)).mult(8)
-  }
-
-  var drawOk1 = 1;
-  if (b1.a == 255) {
-    drawOk1 = 0;
-  }
-
-  if ((keyCode === 32) && drawOk1) {
-    var HeadAdd1 = p5.Vector.fromAngle(t1.heading);
-    b1.a = 255
-    b1.bPosx = t1.pos.x+HeadAdd1.x*37
-    b1.bPosy = t1.pos.y+HeadAdd1.y*37
-    b1.bHeading = (p5.Vector.fromAngle(t1.heading)).mult(8)
-  }
-
+  // Shoots a bullet from the red tanks
+  addBullet(32,t1,b1);
 }
 
+// Code for all bullets
 class Bullet {
-  constructor(bPosx, bPosy, r, g, b, a, bHeading, w){ //every ball needs an x value and a y value
-        this.bPosx = bPosx;
-        this.bPosy = bPosy;
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
-        this.bHeading = bHeading;
-        this.w = w;
-        this.score = 0;
+  constructor(bPosx, bPosy, r, g, b, a, bHeading, w){
+      // (X Position of Bullet, Y Position of Bullet, Red, Blue, Green, Alpha, Bullet Heading, Bullet Width)
+      this.bPosx = bPosx;
+      this.bPosy = bPosy;
+      this.r = r;
+      this.g = g;
+      this.b = b;
+      this.a = a;
+      this.bHeading = bHeading;
+      this.w = w;
+      this.score = 0;
 
-        this.testPos;
-
+      // Tests the color of the position of the ball, does not need to be passed through
+      this.testPos;
   }
 
-  drawBullet() {  // draw a ball on the screen at x,y
+  drawBullet() {  // draw a ball on the screen at Position x and Posiiton y
         push();
         translate(this.bPosx,this.bPosy);
         strokeWeight(1);
@@ -112,29 +99,31 @@ class Bullet {
         fill(this.r,this.g,this.b,this.a);
         ellipse(0 , 0,this.w,this.w);
         pop();
-
   }
 
-  moveBullet(){ //update the location of the ball, so it moves across the screen
-    if (this.testPos[0] == 254) {
+  moveBullet(){ // Update the position of the ball to make it move accross the screen
+    var newPos = [createVector(66, 120), createVector(825, 120), createVector(825, 510), createVector(66, 510)];
 
+    if (this.testPos[0] == t1.testCourse) { // If Bullet is touching a wall
       this.a = 0;
 
-    } else if (this.testPos[0] == 250) {
-
+    } else if (this.testPos[0] == t1.r) { // If Bullet is touching the red tank
       if (this.a != 0) {
-        this.score += 1
-        t1.pos = createVector(65, 295)
+        this.score += 1;
+        t1.pos = newPos[Math.floor(Math.random()*newPos.length)];
+        explodeSound.setVolume(0.1);
+        explodeSound.play();
       }
       this.a = 0;
 
-    } else if (this.testPos[2] == 255) {
-
+    } else if (this.testPos[2] == t2.b) { // If bulledt is touching a blue tank
       if (this.a != 0) {
-        this.score += 1
-        t2.pos = createVector(835, 295)
+        this.score += 1;
+        t2.pos = newPos[Math.floor(Math.random()*newPos.length)];
+        explodeSound.setVolume(0.1);
+        explodeSound.play();
       }
-      this.a = 0
+      this.a = 0;
 
     } else {
       this.bPosx = this.bPosx+this.bHeading.x;
@@ -142,14 +131,29 @@ class Bullet {
     }
   }
 
-  detectCollision(){
+  detectCollision(){ // Gets the color at the ball's position
     this.testPos = get(this.bPosx, this.bPosy);
   }
 
+  // bounceBall(){
+  //     if (this.x >= width-5){
+  //         this.speedx = -this.speedx;
+  //     } else if (this.x <= 5) {
+  //       this.speedx = -this.speedx;
+  //     } else if (this.y >= height-10) {
+  //       this.speedy = -this.speedy;
+  //     } else if (this.y <= 5) {
+  //       this.speedy = -this.speedy;
+  //     }
+  //
+  //   }
+
 }
 
+// All code for tanks
 class Tank {
   constructor(r, g, b, pos, heading, angle, vel, force, startAngle) {
+    // (Red, Green, Blue, Position, Heading, Angle, Velocity, Force, Starting Angle)
     this.r = r;
     this.g = g;
     this.b = b;
@@ -160,15 +164,17 @@ class Tank {
     this.force = force;
     this.startAngle = startAngle;
 
+    // Testing the color of the four courners, does not need to be passed through
     this.testTopRight;
     this.testBotRight;
     this.testTopLeft;
     this.testBotLeft;
 
+    this.testCourse;
+
   }
 
-  // Draw the tank at 0,0, then translate to the current position, also rotate
-  drawTank() {
+  drawTank() { // Draw the tank at 0,0, then translate to the current position, also rotate
     stroke(this.r,this.g,this.b);
     strokeWeight(1);
     fill(this.r,this.g,this.b);
@@ -176,96 +182,107 @@ class Tank {
     translate(this.pos.x,this.pos.y);
     rotate(this.heading - this.startAngle);
 
+    // Draws the tank shape
     rectMode(CORNER);
     rect(-18,-15,10.5,30);
     rect(9,-15,10.5,30);
     rect(-9,-6,18,15);
     rect(-3,9,7.5,21);
 
-
     pop();
   }
 
-  updatePos(){
+  updatePos() { // Constatly updates the position of the tank
     this.pos.add(this.vel);
   }
 
-  detectWall(){
+  detectWall() { // Tests the four corners of the tank
     this.testTopRight = get(this.pos.x+19, this.pos.y-15);
     this.testTopLeft = get(this.pos.x-18, this.pos.y-15);
     this.testBotRight = get(this.pos.x+19, this.pos.y+15);
     this.testBotLeft = get(this.pos.x-18, this.pos.y+20);
   }
 
+  moveMe(left, right, up) {
 
-
-  moveMe1(){
-
-    if (keyIsDown(UP_ARROW) && (this.testTopRight[0] != 254) && (this.testBotRight[0] != 254) && (this.testTopLeft[0] != 254) && (this.testBotLeft[0] != 254))  { //if you hold the up arrow, move up by speed
-
+    if (keyIsDown(up) && (this.testTopRight[0] != this.testCourse) && (this.testBotRight[0] != this.testCourse) && (this.testTopLeft[0] != this.testCourse) && (this.testBotLeft[0] != this.testCourse))  { //if you hold the up arrow, move up by speed
       var force = p5.Vector.fromAngle(this.heading);
-      force.mult(1.5);
+      force.mult(0.8);
       this.vel = force;
 
-
-    } else if (keyIsDown(UP_ARROW)) {
+    } else if (keyIsDown(up)) {
       var direction = p5.Vector.fromAngle(this.heading + PI);
       this.pos.x += direction.x*20;
       this.pos.y += direction.y*20;
-      console.log("detected")
-
-
-    } else {
-      this.vel = createVector(0,0);
-
-    }
-
-    if (keyIsDown(LEFT_ARROW)) { // if you hold the down arrow, move down by speed
-        this.heading -= this.angle;
-    }
-
-    if (keyIsDown(RIGHT_ARROW)) { // if you hold the down arrow, move down by speed
-        this.heading += this.angle;
-    }
-
-  }
-
-  moveMe2(){
-
-    if ((keyIsDown(87)) && (this.testTopRight[0] != 254) && (this.testBotRight[0] != 254) && (this.testTopLeft[0] != 254) && (this.testBotLeft[0] != 254))  { //if you hold the up arrow, move up by speed
-
-      var force = p5.Vector.fromAngle(this.heading);
-      force.mult(1.5);
-      this.vel = force;
-
-
-    } else if (keyIsDown(87)) {
-      var direction = p5.Vector.fromAngle(this.heading + PI);
-      this.pos.x += direction.x*20;
-      this.pos.y += direction.y*20;
-      console.log(this.testTopRight)
-      console.log(this.testTopLeft)
-      console.log(this.testBotRight)
-      console.log(this.testBotLeft)
       console.log("detected")
 
     } else {
       this.vel = createVector(0,0);
     }
 
-    if (keyIsDown(65)) { // if you hold the down arrow, move down by speed
+    if (keyIsDown(left)) { // if you hold the down arrow, move down by speed
         this.heading -= this.angle;
     }
 
-    if (keyIsDown(68)) { // if you hold the down arrow, move down by speed
+    if (keyIsDown(right)) { // if you hold the down arrow, move down by speed
         this.heading += this.angle;
     }
 
   }
-
 }
 
-function drawCourse() {
+// Shoots a bullet
+function addBullet(k,tank,bullet){
+  // Checks to see if there is already a visible bullet in motion
+  var drawOk = 1;
+  if (bullet.a == 255) {
+    drawOk = 0;
+  }
+
+  // Moves the bullet to the end of the turret, makes it opaque, and sends it off at correct angle and speed
+  if ((keyCode === k) && drawOk) {
+    var HeadAdd2 = p5.Vector.fromAngle(tank.heading);
+    bullet.a = 255;
+    bullet.bPosx = tank.pos.x+HeadAdd2.x*37;
+    bullet.bPosy = tank.pos.y+HeadAdd2.y*37;
+    bullet.bHeading = (p5.Vector.fromAngle(tank.heading)).mult(8);
+    pewSound.setVolume(0.1);
+    pewSound.play();
+  }
+}
+
+// Displays the Score
+function showScore(){
+  noStroke();
+  fill(scoreColor);
+  textSize(32);
+  text(b1.score, canW/4, 40);
+  text(b2.score, (canW/4)*3, 40);
+}
+
+//Draws the first course
+function drawCourse1() {
+  t1.testCourse = 254;
+  t2.testCourse = 254;
+
+  t1.r = 250
+  t1.g = 0
+  t1.b = 0
+
+  t2.r = 0
+  t2.g = 0
+  t2.b = 255
+
+  b1.r = 0
+  b1.g = 0
+  b1.b = 0
+
+  b2.r = 0
+  b2.g = 0
+  b2.b = 0
+
+  scoreColor = "black"
+
   fill(254, 176, 91);
 
   rect(0,55,canW,20);
@@ -295,4 +312,58 @@ function drawCourse() {
   rect((canW/8)*7-20, (canH-20)/3, 20,210);
   rect((canW/8)*7-20, (canH-20)/3, 40,20);
   rect((canW/8)*7-20, (canH-20)/3*2+1, 40,20);
+}
+
+// Draws the first background
+function drawBackground1(){
+  background(187, 207, 82);
+}
+
+function drawCourse2() {
+  t1.testCourse = 40;
+  t2.testCourse = 40;
+  t1.r = 171
+  t1.g = 223
+  t1.b = 106
+
+  t2.r = 208
+  t2.g = 207
+  t2.b = 75
+
+  b1.r = 253
+  b1.g = 253
+  b1.b = 253
+
+  b2.r = 253
+  b2.g = 253
+  b2.b = 253
+
+  scoreColor = "white"
+
+  fill(40, 105, 153);
+
+  rect(0,55,canW,20);
+  rect(0,canH-20,canW,20);
+  rect(0,55,20,canH-55);
+  rect(canW-20,55,20,canH-55);
+
+  rect(canW/8, (canH-20)/3, 20,210);
+  rect(canW/8, (canH-20)/3, -20,20);
+  rect(canW/8, (canH-20)/3*2+1, -20,20);
+  rect((canW/8)*7-20, (canH-20)/3, 20,210);
+  rect((canW/8)*7-20, (canH-20)/3, 40,20);
+  rect((canW/8)*7-20, (canH-20)/3*2+1, 40,20);
+
+  rect((canW/2)-15,(canH-20)/4,30,100);
+  rect((canW/2)-15,(((canH-20)/4)*3)-20,30,100);
+
+  rect((canW/2)-100,((canH-20)/2)+20,-100,30);
+  rect((canW/2)+100,((canH-20)/2)+20,100,30);
+
+}
+
+// Draws the second background
+function drawBackground2(){
+  background(48, 23, 160);
+
 }
