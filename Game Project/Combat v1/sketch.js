@@ -4,6 +4,12 @@ var canW = 900;
 
 var scoreColor
 
+var courseButton;
+var instructionButton;
+var currentCourse = drawCourse2;
+var currentBack = drawBackground2;
+var showing = 0
+
 function preload() {
   soundFormats('mp3', 'ogg');
   pewSound = loadSound('pew.mp3');
@@ -24,45 +30,73 @@ function setup() {
   // Creates Blue Tank Bullets
   b2 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
 
+  var col = color(255,255,255);
+
+  courseButton = createButton('Change Course');
+  courseButton.position(50, 20);
+  courseButton.style('background-color', col);
+  courseButton.mousePressed(changeCourse);
+
+  instructionButton = createButton('Instructions');
+  instructionButton.position(canW-150, 20);
+  instructionButton.style('background-color', col);
+  instructionButton.mousePressed(showInstructions);
+}
+
+function changeCourse(){
+  if (currentCourse == drawCourse2 && currentBack == drawBackground2) {
+    currentCourse = drawCourse1;
+    currentBack = drawBackground1;
+
+  } else {
+    currentCourse = drawCourse2;
+    currentBack = drawBackground2;
+  }
+}
+
+function showInstructions(){
+  if (showing == 0) {
+    noStroke()
+    drawInstructions();
+    showing = 1;
+
+  } else {
+    fill(255,255,255)
+    rect(100,100,canW-200,canH-200);
+    showing = 0;
+
+  }
 }
 
 function draw() {
+  if (showing == 0) {
+    // Draw the first background and course
+    currentCourse();
+    currentBack();
 
+    // Call all the tank functions for both tanks
+    t1.drawTank();
+    t2.drawTank();
+    noStroke();
+    currentCourse();
+    t1.detectWall();
+    t2.detectWall();
+    t1.moveMe(65, 68, 87);
+    t2.moveMe(LEFT_ARROW, RIGHT_ARROW, UP_ARROW);
+    t1.updatePos();
+    t2.updatePos();
 
-  // Draw the first background and course
-  drawBackground2();
-  drawCourse2();
+    // Call all the bullet functions for all bullets
+    b1.detectCollision();
+    b1.drawBullet();
+    b1.moveBullet();
+    b2.detectCollision();
+    b2.drawBullet();
+    b2.moveBullet();
 
-  // Call all the tank functions for both tanks
-  t1.drawTank();
-  t2.drawTank();
-  noStroke();
-  drawCourse2();
-  t1.detectWall();
-  t2.detectWall();
-  t1.moveMe(65, 68, 87);
-  t2.moveMe(LEFT_ARROW, RIGHT_ARROW, UP_ARROW);
-  t1.updatePos();
-  t2.updatePos();
-
-  // Call all the bullet functions for all bullets
-  b1.detectCollision();
-  b1.drawBullet();
-  b1.moveBullet();
-  b2.detectCollision();
-  b2.drawBullet();
-  b2.moveBullet();
-
-  // Call the score function
-  showScore();
-  // //text showing mouse coordinates
-  // textSize(10)
-  // fill(255, 0, 0);
-  // text("("+mouseX + ", " + mouseY+")", 5, 15);
-  //
-  // fill(255,255,0);
-  // strokeWeight(10)
-  // stroke(255,255,0);
+    // Call the score function
+    showScore();
+  }
 }
 
 function keyPressed(){
@@ -260,6 +294,23 @@ function showScore(){
   text(b2.score, (canW/4)*3, 40);
 }
 
+function drawInstructions(){
+  fill(255,255,255);
+  rect(100,100,canW-200,canH-200);
+  fill(0,0,0);
+  textStyle(NORMAL);
+  textSize(17);
+  text('Game Clone by Michael DeLaurier', 120, 170);
+  textSize(25);
+  text('Left Tank: Use AWD to move, shoot with space bar.', 120, 230);
+  text('Right Tank: Use arrow keys to move, shoot with option key.', 120, 265);
+  text('Use the Change Course button to switch courses,', 120, 325);
+  text('there is no point max, the game is endless.', 120, 360);
+
+  textStyle(BOLD);
+  textSize(32);
+  text('Atari Combat', 120, 150);
+}
 //Draws the first course
 function drawCourse1() {
   t1.testCourse = 254;
