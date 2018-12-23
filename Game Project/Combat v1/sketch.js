@@ -2,13 +2,17 @@
 var canH = 586;
 var canW = 900;
 
-var scoreColor
+var scoreColor;
+var topColor;
 
 var courseButton;
 var instructionButton;
 var currentCourse = drawCourse2;
 var currentBack = drawBackground2;
 var showing = 0
+var bounceSlider;
+
+var maxBounce = 7;
 
 function preload() {
   soundFormats('mp3', 'ogg');
@@ -41,6 +45,10 @@ function setup() {
   instructionButton.position(canW-150, 20);
   instructionButton.style('background-color', col);
   instructionButton.mousePressed(showInstructions);
+
+  bounceSlider = createSlider(1, 7, 1, 1);
+  bounceSlider.position(canW/2-40, 20);
+  bounceSlider.style('width', '80px');
 }
 
 function changeCourse(){
@@ -69,6 +77,9 @@ function showInstructions(){
 }
 
 function draw() {
+
+
+  maxBounce = bounceSlider.value();
   if (showing == 0) {
     // Draw the first background and course
     currentCourse();
@@ -97,7 +108,19 @@ function draw() {
     // Call the score function
     showScore();
   }
+
+  //text showing mouse coordinates
+  // fill(255, 0, 0);
+  // text("("+mouseX + ", " + mouseY+")", 5, 15);
+  //
+  // fill(255,255,0);
+  // strokeWeight(10)
+  // stroke(255,255,0);
+  //
+  sliderText();
+
 }
+
 
 function keyPressed(){
   // Shoots a bullet from the blue tank
@@ -121,27 +144,34 @@ class Bullet {
       this.w = w;
       this.score = 0;
 
-      // Tests the color of the position of the ball, does not need to be passed through
+      // Tests the color of the position of the bullet, does not need to be passed through
       this.testPos;
+      this.testPosUp;
+      this.testPosDown;
+      this.testPosLeft;
+      this.testPosRight;
+
+      this.bounceCount;
   }
 
-  drawBullet() {  // draw a ball on the screen at Position x and Posiiton y
+  drawBullet() {  // draw a bullet on the screen at Position x and Posiiton y
         push();
         translate(this.bPosx,this.bPosy);
         strokeWeight(1);
-        stroke(this.r,this.g,this.b,this.a);
-        fill(this.r,this.g,this.b,this.a);
-        ellipse(0 , 0,this.w,this.w);
+        stroke(this.r, this.g, this.b, this.a);
+        fill(this.r, this.g, this.b, this.a);
+        ellipse(0, 0, this.w, this.w);
         pop();
   }
 
-  moveBullet(){ // Update the position of the ball to make it move accross the screen
+  moveBullet(){ // Update the position of the bullet to make it move accross the screen
     var newPos = [createVector(66, 120), createVector(825, 120), createVector(825, 510), createVector(66, 510)];
 
-    if (this.testPos[0] == t1.testCourse) { // If Bullet is touching a wall
-      this.a = 0;
+    if (this.bounceCount == maxBounce) {
+      this.a = 0
+    }
 
-    } else if (this.testPos[0] == t1.r) { // If Bullet is touching the red tank
+    if (this.testPos[0] == t1.r) { // If Bullet is touching the red tank
       if (this.a != 0) {
         this.score += 1;
         t1.pos = newPos[Math.floor(Math.random()*newPos.length)];
@@ -149,8 +179,9 @@ class Bullet {
         explodeSound.play();
       }
       this.a = 0;
+    }
 
-    } else if (this.testPos[2] == t2.b) { // If bulledt is touching a blue tank
+    if (this.testPos[2] == t2.b) { // If bullet is touching a blue tank
       if (this.a != 0) {
         this.score += 1;
         t2.pos = newPos[Math.floor(Math.random()*newPos.length)];
@@ -158,29 +189,31 @@ class Bullet {
         explodeSound.play();
       }
       this.a = 0;
+    }
 
-    } else {
+    if ((this.testPosUp[0] == t1.testCourse || this.testPosDown[0] == t1.testCourse) && this.bounceCount != maxBounce) { // If Bullet is touching a wall
+      this.bHeading.y = -this.bHeading.y;
+      this.bounceCount++;
+    }
+
+    if ((this.testPosLeft[0] == t1.testCourse || this.testPosRight[0] == t1.testCourse) && this.bounceCount != maxBounce){
+      this.bHeading.x = -this.bHeading.x;
+      this.bounceCount++;
+    }
+    if (this.bounceCount != maxBounce) {
       this.bPosx = this.bPosx+this.bHeading.x;
       this.bPosy = this.bPosy+this.bHeading.y;
+
     }
   }
 
   detectCollision(){ // Gets the color at the ball's position
     this.testPos = get(this.bPosx, this.bPosy);
+    this.testPosUp = get(this.bPosx, this.bPosy-(this.w/2+2));
+    this.testPosDown = get(this.bPosx, this.bPosy+(this.w/2+2));
+    this.testPosLeft = get(this.bPosx-(this.w/2+2), this.bPosy);
+    this.testPosRight = get(this.bPosx+(this.w/2+2), this.bPosy);
   }
-
-  // bounceBall(){
-  //     if (this.x >= width-5){
-  //         this.speedx = -this.speedx;
-  //     } else if (this.x <= 5) {
-  //       this.speedx = -this.speedx;
-  //     } else if (this.y >= height-10) {
-  //       this.speedy = -this.speedy;
-  //     } else if (this.y <= 5) {
-  //       this.speedy = -this.speedy;
-  //     }
-  //
-  //   }
 
 }
 
@@ -279,9 +312,11 @@ function addBullet(k,tank,bullet){
     bullet.a = 255;
     bullet.bPosx = tank.pos.x+HeadAdd2.x*37;
     bullet.bPosy = tank.pos.y+HeadAdd2.y*37;
-    bullet.bHeading = (p5.Vector.fromAngle(tank.heading)).mult(8);
+    bullet.bHeading = (p5.Vector.fromAngle(tank.heading)).mult(6);
     pewSound.setVolume(0.1);
     pewSound.play();
+    bullet.bounceCount = 0;
+
   }
 }
 
@@ -306,6 +341,8 @@ function drawInstructions(){
   text('Right Tank: Use arrow keys to move, shoot with option key.', 120, 265);
   text('Use the Change Course button to switch courses,', 120, 325);
   text('there is no point max, the game is endless.', 120, 360);
+  text('Use the slider at the top of the screen to change the amount', 120, 420)
+  text('of times the bullet can bounce.', 120, 455)
 
   textStyle(BOLD);
   textSize(32);
@@ -333,6 +370,7 @@ function drawCourse1() {
   b2.b = 0
 
   scoreColor = "black"
+  topColor = "black"
 
   fill(254, 176, 91);
 
@@ -390,6 +428,7 @@ function drawCourse2() {
   b2.b = 253
 
   scoreColor = "white"
+  topColor = "white"
 
   fill(40, 105, 153);
 
@@ -417,4 +456,13 @@ function drawCourse2() {
 function drawBackground2(){
   background(48, 23, 160);
 
+}
+
+function sliderText() {
+  fill(topColor)
+  noStroke();
+  textSize(17);
+  text('Bullet Bounce', 400, 18);
+  text('0', 414, 50);
+  text('6', 480, 50);
 }
