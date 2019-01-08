@@ -5,8 +5,11 @@ var canW = 900;
 var scoreColor;
 var topColor;
 
+var end = false;
+
 var courseButton;
 var instructionButton;
+var resetButton;
 var currentCourse = drawCourse2;
 var currentBack = drawBackground2;
 var showing = 0
@@ -75,11 +78,12 @@ function showInstructions(){
     fill(255,255,255)
     rect(100,100,canW-200,canH-200);
     showing = 0;
-
   }
 }
 
+
 function draw() {
+  testScore();
   maxBounce = bounceSlider.value();
   if (showing == 0) {
     // Draw the first background and course
@@ -110,14 +114,14 @@ function draw() {
     showScore();
   }
 
-  //text showing mouse coordinates
-  // fill(255, 0, 0);
+  // textSize(10)
+  // fill(255, 255, 0);
   // text("("+mouseX + ", " + mouseY+")", 5, 15);
   //
   // fill(255,255,0);
   // strokeWeight(10)
   // stroke(255,255,0);
-  //
+
   sliderText();
 }
 
@@ -347,6 +351,34 @@ function drawInstructions(){
   textStyle(BOLD);
   textSize(32);
   text('Atari Combat', 120, 150);
+}
+
+var winningPlayer;
+
+function drawGameOver(){
+  background(255,0,0)
+  textStyle(BOLD);
+  textSize(100);
+  text('Game Over!', 180, 265);
+  textSize(50);
+  text('Player ' + winningPlayer + ' Wins!',290,360)
+  textSize(25);
+  textStyle(NORMAL);
+  text('Refresh to play again.',340 ,400)
+}
+
+function testScore() {
+  if (b1.score == 7) {
+    showing = 1;
+    winningPlayer = 1;
+    drawGameOver()
+  }
+
+  if (b2.score == 7) {
+    showing = 1;
+    winningPlayer = 2;
+    drawGameOver()
+  }
 }
 
 //Draws the first course
