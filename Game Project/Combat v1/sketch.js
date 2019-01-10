@@ -6,7 +6,7 @@ var scoreColor;
 var topColor;
 
 var end = false;
-
+var myExplosion;
 var courseButton;
 var instructionButton;
 var resetButton;
@@ -17,11 +17,14 @@ var bounceSlider;
 
 var maxBounce = 7;
 
+var explosionSprite;
+
 function preload() {
   soundFormats('mp3', 'ogg');
   pewSound = loadSound('pew.mp3');
   explodeSound = loadSound('explosion.mp3');
-  bounceSound = loadSounds('bounce.mp3');
+  bounceSound = loadSound('bounce.mp3');
+  explosionSprite = loadImage('explosion-sprite.png')
 }
 
 // Runs once
@@ -39,6 +42,9 @@ function setup() {
   b1 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
   // Creates Blue Tank Bullets
   b2 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
+
+  myExplosion1 = new Explosion();
+  myExplosion2 = new Explosion();
 
   var col = color(255,255,255);
 
@@ -112,6 +118,10 @@ function draw() {
 
     // Call the score function
     showScore();
+
+    myExplosion1.drawExplosion();
+    myExplosion2.drawExplosion();
+
   }
 
   // textSize(10)
@@ -176,6 +186,7 @@ class Bullet {
 
     if (this.testPos[0] == t1.r) { // If Bullet is touching the red tank
       if (this.a != 0) {
+        myExplosion1.reset(t1);
         this.score += 1;
         t1.pos = newPos[Math.floor(Math.random()*newPos.length)];
         explodeSound.setVolume(0.1);
@@ -186,6 +197,7 @@ class Bullet {
 
     if (this.testPos[2] == t2.b) { // If bullet is touching a blue tank
       if (this.a != 0) {
+        myExplosion2.reset(t2);
         this.score += 1;
         t2.pos = newPos[Math.floor(Math.random()*newPos.length)];
         explodeSound.setVolume(0.1);
@@ -220,6 +232,28 @@ class Bullet {
 
 }
 
+
+class Explosion {
+  constructor(){
+    this.framesElapsed = 0;
+    this.animationFrame = 0;
+  }
+
+  reset(tank) {
+    this.x = tank.pos.x;
+    this.y = tank.pos.y
+    this.framesElapsed = 0;
+    this.animationFrame = 0;
+  }
+
+  drawExplosion(){
+    this.framesElapsed ++;
+    if (this.framesElapsed %6 == 0){
+      this.animationFrame ++;
+    }
+    image(explosionSprite, this.x-74, this.y-50, 148, 100, 148*this.animationFrame, 0, 148, 100)
+  }
+}
 // All code for tanks
 class Tank {
   constructor(r, g, b, pos, heading, angle, vel, force, startAngle) {
