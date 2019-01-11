@@ -25,6 +25,7 @@ function preload() {
   explodeSound = loadSound('explosion.mp3');
   bounceSound = loadSound('bounce.mp3');
   explosionSprite = loadImage('explosion-sprite.png')
+  myFont = loadFont('INVASION2000.TTF');
 }
 
 // Runs once
@@ -359,6 +360,7 @@ function addBullet(k,tank,bullet){
 
 // Displays the Score
 function showScore(){
+  textFont(myFont);
   noStroke();
   fill(scoreColor);
   textSize(32);
@@ -368,20 +370,26 @@ function showScore(){
 
 // Draws the instructions for the game
 function drawInstructions(){
+  textFont(myFont);
   fill(255,255,255);
   rect(100,100,canW-200,canH-200);
   fill(0,0,0);
   textStyle(NORMAL);
   textSize(17);
   text('Game Clone by Michael DeLaurier', 120, 170);
-  textSize(25);
-  text('Left Tank: Use AWD to move, shoot with space bar.', 120, 230);
-  text('Right Tank: Use arrow keys to move, shoot with option key.', 120, 265);
+  textSize(20);
+  fill(t1.r,t1.g,t1.b);
+  text('Left Tank: AWD to move, shoot with space bar.', 120, 230);
+  fill(t2.r,t2.g,t2.b);
+  text('Right Tank: Arrow keys to move, shoot with option key.', 120, 265);
+  fill(50,50,50);
   text('Use the Change Course button to switch courses,', 120, 325);
   text('there is no point max, the game is endless.', 120, 360);
-  text('Use the slider at the top of the screen to change the amount', 120, 420)
-  text('of times the bullet can bounce.', 120, 455)
+  fill(100,100,100);
+  text('Use the slider at the top of the screen to change the', 120, 420)
+  text('amount of times the bullet can bounce.', 120, 455)
 
+  fill(0,0,0);
   textStyle(BOLD);
   textSize(32);
   text('Atari Combat', 120, 150);
@@ -390,6 +398,7 @@ function drawInstructions(){
 var winningPlayer;
 
 function drawGameOver(){
+  textFont(myFont);
   background(255,0,0)
   textStyle(BOLD);
   textSize(100);
@@ -528,6 +537,7 @@ function drawBackground2(){
 function sliderText() {
   fill(topColor)
   noStroke();
+  textFont(myFont);
   textSize(17);
   text('Bullet Bounce', 400, 18);
   text('0', 414, 50);
