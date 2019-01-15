@@ -1,34 +1,43 @@
+// ATARI Combat
+// Programmed by Michael DeLaurier
+// January 15, 2019
+
 // Variables for canvas width and height, global
 var canH = 586;
 var canW = 900;
 
+// Variables for top colors, global
 var scoreColor;
 var topColor;
-
+var showing = 0;
 var end = false;
+
+// Variables for explosion animation, global
 var myExplosion;
+var explosionSprite;
+
+// Variables for buttons, global
 var courseButton;
 var instructionButton;
 var resetButton;
+
+// Variables for courses, global
 var currentCourse = drawCourse2;
 var currentBack = drawBackground2;
-var showing = 0
-var bounceSlider;
 
+// Variables for bullent boutncing, global
+var bounceSlider;
 var maxBounce = 7;
 
-var explosionSprite;
-
+// Preloads all sounds, sprites, and fonts.
 function preload() {
   soundFormats('mp3', 'ogg');
   pewSound = loadSound('pew.mp3');
   explodeSound = loadSound('explosion.mp3');
   bounceSound = loadSound('bounce.mp3');
-  explosionSprite = loadImage('explosion-sprite.png')
+  explosionSprite = loadImage('explosion-sprite.png');
   myFont = loadFont('INVASION2000.TTF');
 }
-
-// Runs once
 
 function setup() {
   // Creates a canvas with the canH and canW variables
@@ -40,44 +49,53 @@ function setup() {
   t2 = new Tank(0,0,255,createVector(835, 295), PI, 0.05, createVector(0,0), 0, PI/2);
 
   // Creates Red Tank Bullets
-  b1 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t1.heading)).mult(8), 8);
+  b1 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t1.heading)).mult(8), 8, 1);
   // Creates Blue Tank Bullets
-  b2 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8);
+  b2 = new Bullet(0, 0, 0, 0, 0, 0, (p5.Vector.fromAngle(t2.heading)).mult(8), 8, 2);
 
+  // Creates Red Tank Explosion
   myExplosion1 = new Explosion();
+
+  // Creates Blue Tank Explosion
   myExplosion2 = new Explosion();
 
   var col = color(255,255,255);
 
+  // Code for all buttons and sliders
+
+  // Change Course Button
   courseButton = createButton('Change Course');
   courseButton.position(50, 20);
   courseButton.style('background-color', col);
   courseButton.mousePressed(changeCourse);
 
+  // Instruction Button
   instructionButton = createButton('Instructions');
   instructionButton.position(canW-150, 20);
   instructionButton.style('background-color', col);
   instructionButton.mousePressed(showInstructions);
 
+  // Slider Code
   bounceSlider = createSlider(1, 7, 1, 1);
   bounceSlider.position(canW/2-40, 20);
   bounceSlider.style('width', '80px');
 }
 
+// Toggles between the two courses
 function changeCourse(){
   if (currentCourse == drawCourse2 && currentBack == drawBackground2) {
     currentCourse = drawCourse1;
     currentBack = drawBackground1;
-
   } else {
     currentCourse = drawCourse2;
     currentBack = drawBackground2;
   }
 }
 
+// Shows and hides the instructions
 function showInstructions(){
   if (showing == 0) {
-    noStroke()
+    noStroke();
     drawInstructions();
     showing = 1;
 
@@ -88,10 +106,11 @@ function showInstructions(){
   }
 }
 
-
 function draw() {
   testScore();
+
   maxBounce = bounceSlider.value();
+
   if (showing == 0) {
     // Draw the first background and course
     currentCourse();
@@ -120,19 +139,11 @@ function draw() {
     // Call the score function
     showScore();
 
+    // Draws the explosions
     myExplosion1.drawExplosion();
     myExplosion2.drawExplosion();
 
   }
-
-  // textSize(10)
-  // fill(255, 255, 0);
-  // text("("+mouseX + ", " + mouseY+")", 5, 15);
-  //
-  // fill(255,255,0);
-  // strokeWeight(10)
-  // stroke(255,255,0);
-
   sliderText();
 }
 
@@ -146,7 +157,7 @@ function keyPressed(){
 
 // Code for all bullets
 class Bullet {
-  constructor(bPosx, bPosy, r, g, b, a, bHeading, w){
+  constructor(bPosx, bPosy, r, g, b, a, bHeading, w, whichTank){
       // (X Position of Bullet, Y Position of Bullet, Red, Blue, Green, Alpha, Bullet Heading, Bullet Width)
       this.bPosx = bPosx;
       this.bPosy = bPosy;
@@ -157,6 +168,8 @@ class Bullet {
       this.bHeading = bHeading;
       this.w = w;
       this.score = 0;
+
+      this.whichTank = whichTank;
 
       // Tests the color of the position of the bullet, does not need to be passed through
       this.testPos;
@@ -188,7 +201,13 @@ class Bullet {
     if (this.testPos[0] == t1.r) { // If Bullet is touching the red tank
       if (this.a != 0) {
         myExplosion1.reset(t1);
-        this.score += 1;
+
+        if (this.whichTank == 1) {
+          b2.score += 1;
+        } else {
+          this.score += 1;
+        }
+
         t1.pos = newPos[Math.floor(Math.random()*newPos.length)];
         explodeSound.setVolume(0.1);
         explodeSound.play();
@@ -199,7 +218,11 @@ class Bullet {
     if (this.testPos[2] == t2.b) { // If bullet is touching a blue tank
       if (this.a != 0) {
         myExplosion2.reset(t2);
-        this.score += 1;
+        if (this.whichTank == 2) {
+          b1.score += 1;
+        } else {
+          this.score += 1;
+        }
         t2.pos = newPos[Math.floor(Math.random()*newPos.length)];
         explodeSound.setVolume(0.1);
         explodeSound.play();
@@ -233,7 +256,7 @@ class Bullet {
 
 }
 
-
+// All code for exlosions
 class Explosion {
   constructor(){
     this.framesElapsed = 0;
@@ -255,6 +278,7 @@ class Explosion {
     image(explosionSprite, this.x-74, this.y-50, 148, 100, 148*this.animationFrame, 0, 148, 100)
   }
 }
+
 // All code for tanks
 class Tank {
   constructor(r, g, b, pos, heading, angle, vel, force, startAngle) {
@@ -309,7 +333,6 @@ class Tank {
   }
 
   moveMe(left, right, up) {
-
     if (keyIsDown(up) && (this.testTopRight[0] != this.testCourse) && (this.testBotRight[0] != this.testCourse) && (this.testTopLeft[0] != this.testCourse) && (this.testBotLeft[0] != this.testCourse))  { //if you hold the up arrow, move up by speed
       var force = p5.Vector.fromAngle(this.heading);
       force.mult(0.8);
@@ -332,7 +355,6 @@ class Tank {
     if (keyIsDown(right)) { // if you hold the down arrow, move down by speed
         this.heading += this.angle;
     }
-
   }
 }
 
