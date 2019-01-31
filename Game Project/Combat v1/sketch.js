@@ -558,8 +558,8 @@ function drawCourse2() {
   b2.g = 253
   b2.b = 253
 
-  scoreColor = "white"
-  topColor = "white"
+  scoreColor = "black"
+  topColor = "black"
 
 
   fill(40, 105, 153);
@@ -587,7 +587,7 @@ function drawCourse2() {
   rect((canW/2)-100,((canH-20)/2)+20,-100,30);
   rect((canW/2)+100,((canH-20)/2)+20,100,30);
 
-  fill(0,0,0)
+  fill(245,245,245)
   rect(0,0,canW,55)
 }
 
