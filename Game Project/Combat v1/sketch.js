@@ -316,7 +316,7 @@ class Tank {
 
   }
 
-  drawTank() { // Draw the tank at 0,0, then translate to the current position, also rotate
+  drawTank() { // Draw the tank at 0,0, then translate to the current position, also rotates
     stroke(this.r,this.g,this.b);
     strokeWeight(1);
     fill(this.r,this.g,this.b);
