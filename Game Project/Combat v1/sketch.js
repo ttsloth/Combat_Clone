@@ -143,6 +143,7 @@ function draw() {
     myExplosion1.drawExplosion();
     myExplosion2.drawExplosion();
 
+
   }
   sliderText();
 }
@@ -240,6 +241,18 @@ class Bullet {
       this.bounceCount++;
     }
     if (this.bounceCount != maxBounce) {
+      // if (this.bPosx < 0) {
+      //   this.bPosx = canW;
+      // } else if (this.bPosx > canW) {
+      //   this.bPosx = 0;
+      // }
+      if (this.bPosy < 55) {
+        this.bPosy = canH;
+        this.bPosx = this.bPosx+canW/2;
+      } else if (this.bPosy > canH) {
+        this.bPosy = 55;
+        this.bPosx = this.bPosx-canW/2;
+      }
       this.bPosx = this.bPosx+this.bHeading.x;
       this.bPosy = this.bPosy+this.bHeading.y;
 
@@ -322,6 +335,19 @@ class Tank {
   }
 
   updatePos() { // Constatly updates the position of the tank
+    var offset = 20
+    // if (this.pos.x < -offset) {
+    //   this.pos.x = canW+offset;
+    // } else if (this.pos.x > canW+offset) {
+    //   this.pos.x = -offset;
+    // }
+    if (this.pos.y < 55-offset ) {
+      this.pos.y = canH+offset;
+      this.pos.x = this.pos.x+canW/2
+    } else if (this.pos.y > canH+offset) {
+      this.pos.y = 55-offset;
+      this.pos.x = this.pos.x-canW/2
+    }
     this.pos.add(this.vel);
   }
 
@@ -472,8 +498,11 @@ function drawCourse1() {
 
   fill(254, 176, 91);
 
-  rect(0,55,canW,20);
-  rect(0,canH-20,canW,20);
+  rect(0,55,canW/4-50,20);
+  rect(canW/4+50,55,canW/4*3+50,20);
+  rect(0,canH-20,canW/4*3-50,20);
+  rect(canW/4*3+50,canH-20,canW/4+50,20);
+
   rect(0,55,20,canH-55);
   rect(canW-20,55,20,canH-55);
 
@@ -499,6 +528,9 @@ function drawCourse1() {
   rect((canW/8)*7-20, (canH-20)/3, 20,210);
   rect((canW/8)*7-20, (canH-20)/3, 40,20);
   rect((canW/8)*7-20, (canH-20)/3*2+1, 40,20);
+
+  fill(251, 250, 250);
+  rect(0,0,canW,55);
 }
 
 // Draws the first background
@@ -529,10 +561,16 @@ function drawCourse2() {
   scoreColor = "white"
   topColor = "white"
 
+
   fill(40, 105, 153);
 
-  rect(0,55,canW,20);
-  rect(0,canH-20,canW,20);
+  fill(40, 105, 153);
+
+  rect(0,55,canW/4-50,20);
+  rect(canW/4+50,55,canW/4*3+50,20);
+  rect(0,canH-20,canW/4*3-50,20);
+  rect(canW/4*3+50,canH-20,canW/4+50,20);
+
   rect(0,55,20,canH-55);
   rect(canW-20,55,20,canH-55);
 
@@ -549,6 +587,8 @@ function drawCourse2() {
   rect((canW/2)-100,((canH-20)/2)+20,-100,30);
   rect((canW/2)+100,((canH-20)/2)+20,100,30);
 
+  fill(0,0,0)
+  rect(0,0,canW,55)
 }
 
 // Draws the second background
